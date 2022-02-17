@@ -138,7 +138,7 @@ def export_openvino(model, im, file, prefix=colorstr('OpenVINO:')):
         import openvino.inference_engine as ie
 
         LOGGER.info(f'\n{prefix} starting export with openvino {ie.__version__}...')
-        f = str(file).replace('.pt', '_openvino_model' + os.sep)
+        f = str(file).replace('.pt', f'_openvino_model{os.sep}')
 
         cmd = f"mo --input_model {file.with_suffix('.onnx')} --output_dir {f}"
         subprocess.check_output(cmd, shell=True)
@@ -345,7 +345,7 @@ def export_tfjs(keras_model, im, file, prefix=colorstr('TensorFlow.js:')):
         LOGGER.info(f'\n{prefix} starting export with tensorflowjs {tfjs.__version__}...')
         f = str(file).replace('.pt', '_web_model')  # js dir
         f_pb = file.with_suffix('.pb')  # *.pb path
-        f_json = f + '/model.json'  # *.json path
+        f_json = f'{f}/model.json'
 
         cmd = f'tensorflowjs_converter --input_format=tf_frozen_model ' \
               f'--output_node_names="Identity,Identity_1,Identity_2,Identity_3" {f_pb} {f}'
@@ -397,7 +397,11 @@ def run(data=ROOT / 'data/coco128.yaml',  # 'dataset.yaml path'
         ):
     t = time.time()
     include = [x.lower() for x in include]
-    tf_exports = list(x in include for x in ('saved_model', 'pb', 'tflite', 'edgetpu', 'tfjs'))  # TensorFlow exports
+    tf_exports = [
+        x in include
+        for x in ('saved_model', 'pb', 'tflite', 'edgetpu', 'tfjs')
+    ]
+
     file = Path(url2file(weights) if str(weights).startswith(('http:/', 'https:/')) else weights)
 
     # Checks
